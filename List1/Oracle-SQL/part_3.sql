@@ -1,0 +1,41 @@
+-- ZAD 14
+SELECT 
+    LEVEL, 
+    PSEUDO, 
+    FUNKCJA, 
+    NR_BANDY
+FROM 
+    KOCURY
+WHERE 
+    PLEC = 'M'
+START WITH 
+    FUNKCJA = 'BANDZIOR'
+CONNECT BY 
+    PRIOR PSEUDO = SZEF;
+
+-- ZAD 15
+SELECT
+    LPAD(TO_CHAR(LEVEL-1), (LEVEL-1) * 4 + LENGTH(TO_CHAR(LEVEL - 1)), '===>') || '    ' || IMIE AS Hierarchia,
+    NVL(SZEF, 'Sam sobie panem') as "Pseudo szefa",
+    FUNKCJA
+FROM 
+    KOCURY
+WHERE 
+    MYSZY_EXTRA IS NOT NULL
+START WITH 
+    SZEF IS NULL
+CONNECT BY 
+    PRIOR PSEUDO = SZEF;
+
+-- ZAD 16
+SELECT 
+    LPAD(' ', (LEVEL-1)*4, ' ') || PSEUDO AS "Droga sluzbowa"
+FROM 
+    KOCURY
+START WITH 
+    PLEC = 'M' AND
+    MONTHS_BETWEEN(TO_DATE('2024-07-17'), W_STADKU_OD)/12 >= 15 AND
+    MYSZY_EXTRA IS NULL
+CONNECT BY
+    PRIOR SZEF = PSEUDO;
+

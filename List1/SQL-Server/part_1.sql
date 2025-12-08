@@ -1,0 +1,148 @@
+--ZAD 1
+SELECT
+	IMIE_WROGA,
+	OPIS_INCYDENTU
+FROM
+	WROGOWIE_KOCUROW
+WHERE
+	YEAR(DATA_INCYDENTU) = 2009;
+
+-- ZAD 2
+SELECT
+	IMIE,
+	PLEC,
+	FUNKCJA,
+	FORMAT(W_STADKU_OD, 'yyyy-MM-dd') as "Z nami od"
+FROM
+	KOCURY
+WHERE
+	PLEC = 'D' AND
+	(W_STADKU_OD BETWEEN '2005-9-1' AND '2007-7-31');
+
+-- ZAD 3
+SELECT
+	IMIE_WROGA,
+	GATUNEK,
+	STOPIEN_WROGOSCI
+FROM
+	WROGOWIE
+WHERE
+	LAPOWA IS NULL
+ORDER BY
+	STOPIEN_WROGOSCI;
+
+--ZAD 4
+SELECT
+	CONCAT(IMIE, ' zwany ', PSEUDO, ' (fun. ', FUNKCJA, ') lowi myszki w bandzie ', NR_BANDY, ' od ', FORMAT(W_STADKU_OD, 'yyyy-MM-dd')) AS "WSZYSTKO O KOCURACH"
+FROM
+	KOCURY
+WHERE
+	PLEC = 'M'
+ORDER BY
+	W_STADKU_OD DESC,
+	PSEUDO ASC;
+
+-- ZAD 5
+SELECT
+    PSEUDO,
+    STUFF(
+        STUFF(PSEUDO, CHARINDEX('L', PSEUDO), 1, '%'),
+        CHARINDEX('A', STUFF(PSEUDO, CHARINDEX('L', PSEUDO), 1, '%')),
+        1, '#'
+    ) AS "Po wymianie A na # oraz L na %"
+FROM
+    KOCURY
+WHERE
+    PSEUDO LIKE '%A%'
+    AND PSEUDO LIKE '%L%';
+
+-- ZAD 6
+SELECT
+	IMIE,
+	FORMAT(W_STADKU_OD, 'yyyy-MM-dd') AS "W stadku",
+	ROUND(9*PRZYDZIAL_MYSZY/10, 0) AS Zjadal,
+	FORMAT(DATEADD(MONTH, 6, W_STADKU_OD), 'yyyy-MM-dd') AS Podwyzka,
+	PRZYDZIAL_MYSZY AS Zjada
+FROM
+	KOCURY
+WHERE
+	DATEDIFF(YEAR, w_stadku_od, GETDATE()) >= 15 AND
+	MONTH(W_STADKU_OD) BETWEEN 3 AND 9
+ORDER BY 
+	PRZYDZIAL_MYSZY DESC;
+
+-- ZAD 7
+SELECT
+	IMIE,
+	PRZYDZIAL_MYSZY*3 AS "Myszy kwartalnie",
+	ISNULL(myszy_extra, 0) * 3 AS "Kwartalne dodadki"
+FROM
+	KOCURY
+WHERE
+	PRZYDZIAL_MYSZY > ISNULL(MYSZY_EXTRA,0)*2 AND
+	PRZYDZIAL_MYSZY >= 55
+ORDER BY
+	PRZYDZIAL_MYSZY DESC;
+
+-- ZAD 8
+SELECT
+	IMIE,
+	CASE 
+        WHEN PRZYDZIAL_MYSZY + ISNULL(MYSZY_EXTRA,0) < 55
+            THEN 'Ponizej 660'
+        WHEN PRZYDZIAL_MYSZY + ISNULL(MYSZY_EXTRA,0) = 55
+            THEN 'Limit'
+        ELSE
+            CONVERT(CHAR, (PRZYDZIAL_MYSZY + ISNULL(MYSZY_EXTRA,0))*12)
+    END AS "Zjada Rocznie"
+FROM
+	KOCURY
+ORDER BY 
+	IMIE;
+
+
+-- ZAD 9
+-- Unikalność Pseudonimu
+SELECT
+	CONCAT(
+        PSEUDO, 
+        CASE 
+            WHEN COUNT(*) = 1
+                THEN ' - Unikalny'
+            ELSE
+                ' - Nieunikalny'
+            END) AS "Unikalnosc atr. PSEUDO"
+FROM
+	KOCURY
+GROUP BY
+	PSEUDO;
+
+-- Unikalnośc Szefa
+SELECT
+	CONCAT(
+        SZEF,
+        CASE 
+            WHEN COUNT(*) = 1
+                THEN ' - Unikalny'
+            ELSE
+                ' - Nieunikalny'
+            END)  AS "Unikalnosc atr. SZEF"
+FROM 
+	KOCURY
+WHERE 
+	SZEF IS NOT NULL
+GROUP BY 
+	SZEF
+ORDER BY 
+	SZEF;
+
+-- ZAD 10
+SELECT 
+	PSEUDO, 
+	COUNT(*) AS "Liczba wrogow"
+FROM 
+	WROGOWIE_KOCUROW
+GROUP BY 
+	PSEUDO 
+HAVING 
+	COUNT(*) >= 2;

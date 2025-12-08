@@ -1,0 +1,114 @@
+-- ZAD 1
+SELECT 
+    IMIE_WROGA, 
+    OPIS_INCYDENTU
+FROM 
+    WROGOWIE_KOCUROW
+WHERE 
+    EXTRACT(YEAR FROM DATA_INCYDENTU) = 2009;
+
+-- ZAD 2
+SELECT 
+    IMIE, 
+    PLEC,
+    FUNKCJA,
+    TO_CHAR(W_STADKU_OD, 'YYYY-MM-DD') as "Z nami od"
+FROM 
+    KOCURY
+WHERE 
+    PLEC='D' AND 
+    (W_STADKU_OD BETWEEN '2005-9-1' AND '2007-7-31');
+
+-- ZAD 3
+SELECT 
+    IMIE_WROGA, 
+    GATUNEK, 
+    STOPIEN_WROGOSCI
+FROM 
+    WROGOWIE
+WHERE 
+    LAPOWA IS NULL 
+ORDER BY 
+    STOPIEN_WROGOSCI;
+
+-- ZAD 4
+SELECT 
+    IMIE || ' zwany ' || PSEUDO || ' (fun. ' || FUNKCJA || ') lowi myszki w bandzie ' || NR_BANDY || ' od ' || TO_CHAR(W_STADKU_OD, 'YYYY-MM-DD') AS "WSZYSTKO O KOCURACH"
+FROM 
+    KOCURY
+WHERE 
+    PLEC = 'M'
+ORDER BY 
+    W_STADKU_OD DESC, 
+    PSEUDO ASC;
+
+-- ZAD 5
+SELECT 
+    PSEUDO, 
+    REGEXP_REPLACE(
+        REGEXP_REPLACE(PSEUDO, 'L', '%', 1, 1), 'A', '#', 1, 1) as "Po wymianie A na # oraz L na %"
+FROM 
+    KOCURY
+WHERE
+    PSEUDO LIKE '%A%' AND
+    PSEUDO LIKE '%L%';
+
+-- ZAD 6
+SELECT
+    IMIE, 
+    TO_CHAR(W_STADKU_OD, 'YYYY-MM-DD') as "W  stadku", 
+    ROUND(9*PRZYDZIAL_MYSZY/10) as Zjadal,
+    TO_CHAR(ADD_MONTHS(W_STADKU_OD, 6), 'YYYY-MM-DD') as Podwyzka,
+    PRZYDZIAL_MYSZY as Zjada
+FROM 
+    KOCURY
+WHERE
+    MONTHS_BETWEEN(SYSDATE, w_stadku_od)/12 >= 15 AND
+    EXTRACT(MONTH FROM W_STADKU_OD) BETWEEN 3 AND 9
+ORDER BY PRZYDZIAL_MYSZY DESC;
+
+-- ZAD 7
+SELECT 
+    IMIE,
+    PRZYDZIAL_MYSZY*3 as "Myszy kwartalnie",
+    NVL(myszy_extra, 0) * 3 as "Kwartalne dodadki"
+FROM 
+    KOCURY
+WHERE 
+    PRZYDZIAL_MYSZY > NVL(MYSZY_EXTRA,0)*2 AND 
+    PRZYDZIAL_MYSZY >= 55
+ORDER BY 
+    PRZYDZIAL_MYSZY DESC;
+
+-- ZAD 8
+SELECT 
+    IMIE,
+    DECODE(
+        SIGN(55 - PRZYDZIAL_MYSZY - NVL(MYSZY_EXTRA,0)), 
+        1, 'Ponizej 660',
+        0, 'Limit',
+        TO_CHAR((PRZYDZIAL_MYSZY + NVL(MYSZY_EXTRA,0))*12)
+    ) AS "Zjada Rocznie"
+FROM
+    KOCURY
+ORDER BY IMIE;
+
+-- ZAD 9
+SELECT 
+    PSEUDO ||
+    DECODE(COUNT(*), 1, ' - Unikalny', ' - Nieunikalny') AS "Unikalnosc atr. PSEUDO"
+FROM KOCURY
+GROUP BY PSEUDO;
+
+SELECT
+    SZEF || 
+    DECODE(COUNT(*), 1, ' - Unikalny', ' - Nieunikalny') AS "Unikalnosc atr. SZEF"
+FROM KOCURY
+WHERE SZEF IS NOT NULL
+GROUP BY SZEF
+ORDER BY SZEF;
+
+-- ZAD 10
+SELECT PSEUDO, COUNT(*) as "Liczba wrogow"
+FROM WROGOWIE_KOCUROW
+GROUP BY PSEUDO HAVING "Liczba wrogow" >= 2;

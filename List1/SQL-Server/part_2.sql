@@ -1,0 +1,50 @@
+-- ZAD 11
+SELECT
+	PSEUDO,
+	FORMAT(W_STADKU_OD, 'yyyy-MM-dd') AS W_STADKU_OD,
+	CASE
+		WHEN DAY(W_STADKU_OD) <= 15 THEN
+			CASE
+				WHEN TO_DATE('2024-10-29', 'YYYY-MM-DD')
+					<= NEXT_DAY(LAST_DAY(TO_DATE('2024-10-29', 'YYYY-MM-DD')) - 7, 'WED')
+				THEN FORMAT(NEXT_DAY(LAST_DAY(TO_DATE('2024-10-29', 'YYYY-MM-DD')) - 7, 'WED'), 'yyyy-MM-dd')
+				ELSE FORMAT(NEXT_DAY(LAST_DAY(DATEADD(MONTH, 1, TO_DATE('2024-10-29', 'YYYY-MM-DD'))) - 7, 'WED'), 'yyyy-MM-dd')
+			END
+		ELSE
+			FORMAT(NEXT_DAY(LAST_DAY(ADD_MONTHS(TO_DATE('2024-10-29', 'YYYY-MM-DD'), 1)) - 7, 'WED'), 'yyyy-MM-dd')
+    END AS WYPLATA
+FROM
+    KOCURY;
+
+-- ZAD 12
+SELECT 
+	CONCAT(
+        'Liczba kotow= ', 
+        COUNT(*), 
+        ' lowi jako ', 
+        FUNKCJA, 
+        ' i zjada max. ',
+        MAX(PRZYDZIAL_MYSZY + ISNULL(MYSZY_EXTRA, 0)), 
+        ' myszy miesiecznie') AS "Informacje o kotkach"
+FROM 
+	KOCURY
+WHERE
+	FUNKCJA != 'SZEFUNIO' AND
+	PLEC = 'D'
+GROUP BY
+	FUNKCJA
+HAVING
+	AVG(PRZYDZIAL_MYSZY + ISNULL(MYSZY_EXTRA, 0)) > 50
+ORDER BY
+	COUNT(*);
+
+-- ZAD 13
+SELECT 
+	NR_BANDY, 
+	PLEC, 
+	MIN(PRZYDZIAL_MYSZY) AS "Minimalny przydzial"
+FROM 
+	KOCURY
+GROUP BY 
+	NR_BANDY, 
+	PLEC;
